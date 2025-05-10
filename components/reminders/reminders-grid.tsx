@@ -14,7 +14,7 @@ interface RemindersGridProps {
 export function RemindersGrid({ reminders, onDeleteReminder }: RemindersGridProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
-  
+
   const handleDeleteClick = (id: string) => {
     const reminder = reminders.find(r => r.id === id);
     if (reminder) {
@@ -22,7 +22,7 @@ export function RemindersGrid({ reminders, onDeleteReminder }: RemindersGridProp
       setDeleteDialogOpen(true);
     }
   };
-  
+
   const handleDeleteConfirm = () => {
     if (selectedReminder) {
       onDeleteReminder(selectedReminder.id);
@@ -30,7 +30,7 @@ export function RemindersGrid({ reminders, onDeleteReminder }: RemindersGridProp
       setSelectedReminder(null);
     }
   };
-  
+
   if (reminders.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center">
@@ -39,12 +39,12 @@ export function RemindersGrid({ reminders, onDeleteReminder }: RemindersGridProp
         </div>
         <h3 className="text-xl font-medium mb-2">No hay recordatorios</h3>
         <p className="text-muted-foreground max-w-md">
-          Aún no has agregado ningún recordatorio. Haz clic en el botón "Agregar Recordatorio" para comenzar.
+          Aún no has agregado ningún recordatorio. Haz clic en el botón &quot;Agregar Recordatorio&quot; para comenzar.
         </p>
       </div>
     );
   }
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {reminders.map((reminder) => (

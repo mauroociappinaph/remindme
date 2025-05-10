@@ -29,14 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Reminder, FrequencyOptions } from "@/lib/types";
@@ -45,8 +45,10 @@ const formSchema = z.object({
   name: z.string().min(2, {
     message: "El nombre debe tener al menos 2 caracteres.",
   }),
-  expiryDate: z.date({
+  dueDate: z.date({
     required_error: "La fecha de vencimiento es obligatoria.",
+  }).refine(date => isValid(date), {
+    message: "La fecha no es válida",
   }),
   frequency: z.enum(["once", "monthly", "yearly"], {
     required_error: "La frecuencia es obligatoria.",
@@ -69,6 +71,15 @@ export function ReminderForm({ open, onOpenChange, onSubmit }: ReminderFormProps
   });
 
   function handleSubmit(values: z.infer<typeof formSchema>) {
+    // Verificación adicional de la fecha
+    if (!values.dueDate || !isValid(new Date(values.dueDate))) {
+      form.setError("dueDate", {
+        type: "manual",
+        message: "La fecha seleccionada no es válida",
+      });
+      return;
+    }
+
     onSubmit(values);
     form.reset();
     onOpenChange(false);
@@ -101,7 +112,7 @@ export function ReminderForm({ open, onOpenChange, onSubmit }: ReminderFormProps
 
             <FormField
               control={form.control}
-              name="expiryDate"
+              name="dueDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Fecha de vencimiento</FormLabel>
@@ -115,7 +126,7 @@ export function ReminderForm({ open, onOpenChange, onSubmit }: ReminderFormProps
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          {field.value ? (
+                          {field.value && isValid(field.value) ? (
                             format(field.value, "PPP", { locale: es })
                           ) : (
                             <span>Selecciona una fecha</span>
@@ -131,6 +142,7 @@ export function ReminderForm({ open, onOpenChange, onSubmit }: ReminderFormProps
                         onSelect={field.onChange}
                         initialFocus
                         locale={es}
+                        disabled={(date) => date < new Date("1900-01-01")}
                       />
                     </PopoverContent>
                   </Popover>
@@ -165,9 +177,9 @@ export function ReminderForm({ open, onOpenChange, onSubmit }: ReminderFormProps
             />
 
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => onOpenChange(false)}
               >
                 Cancelar

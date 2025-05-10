@@ -12,11 +12,20 @@ interface StatsOverviewProps {
 export function StatsOverview({ reminders }: StatsOverviewProps) {
   // Calculate statistics
   const totalReminders = reminders.length;
-  
-  const { expired, urgent, upcoming, safe } = reminders.reduce(
+
+  // Validamos que los recordatorios tengan fechas válidas
+  const validReminders = reminders.filter(reminder =>
+    reminder.dueDate && !isNaN(new Date(reminder.dueDate).getTime())
+  );
+
+  const { expired, urgent, upcoming, safe } = validReminders.reduce(
     (acc, reminder) => {
-      const { status } = getReminderStatus(reminder);
-      acc[status] += 1;
+      try {
+        const { status } = getReminderStatus(reminder);
+        acc[status] += 1;
+      } catch (error) {
+        console.error("Error processing reminder:", reminder, error);
+      }
       return acc;
     },
     { expired: 0, urgent: 0, upcoming: 0, safe: 0 }
@@ -36,11 +45,11 @@ export function StatsOverview({ reminders }: StatsOverviewProps) {
           </p>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Vencidos</CardTitle>
-          <BellOff className="h-4 w-4 text-brand-coral" />
+          <BellOff className="h-4 w-4 text-destructive" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{expired}</div>
@@ -49,11 +58,11 @@ export function StatsOverview({ reminders }: StatsOverviewProps) {
           </p>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Próximos</CardTitle>
-          <AlertTriangle className="h-4 w-4 text-brand-orange" />
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{urgent}</div>
@@ -62,11 +71,11 @@ export function StatsOverview({ reminders }: StatsOverviewProps) {
           </p>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Cercanos</CardTitle>
-          <Clock className="h-4 w-4 text-brand-yellow" />
+          <Clock className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{upcoming + safe}</div>
